@@ -51,10 +51,10 @@ class TestCommunity:
         from numpy import sort
         accept = 0.0
         G = graphs.simple_graph()
-        deg = sort(G.degree().values())
+        edges = G.edges()
         for i in xrange(0,100):
             accept += rewiring.move_random_edge(G)
-        assert sort(G.degree().values()).all() == deg.all(), "Degree distribution should not have changed!"
+        assert len(G.edges()) == len(edges), "Number of edges should not have changed!"
         
 
     def test_swap_node_degrees(self):
@@ -66,4 +66,33 @@ class TestCommunity:
         assert accept > 0.0, "No swaps were performed!"
         for k in G.degree():
             assert G.degree()[k] == deg[k], "Node degrees should not have changed!"
+
+
+    def test_unweighted_modularity_matrix(self):
+        G = graphs.simple_graph()
+        Q = communities.modularity_matrix(G)
+        assert Q.shape == (len(G.nodes()),len(G.nodes())),"Q matrix is the wrong shape!"
+
+    
+    def test_weighted_modularity_matrix(self):
+        G = graphs.monkey_grooming_graph()
+        Q1 = communities.modularity_matrix(G,edec=None)
+        Q2 = communities.modularity_matrix(G,edec='weight')
+        assert (Q1 != Q2).any(),"Weighted and unweighted Q matrices should not be identical!"
+
+
+    def test_unweighted_spectral_decomp_noflip(self):
+        G = graphs.simple_graph()
+        Q = communities.modularity_matrix(G,edec=None)
+        gList = communities.spectral_subgraph_decomposition(G,Q,G.nodes(),G.degree(weight=None))
+        assert len(gList) == 2,"Graph should have been split!"
+
+    
+    def test_weighted_spectral_decomp_noflip(self):
+        G = graphs.monkey_grooming_graph()
+        Q = communities.modularity_matrix(G,edec='weight')
+        gList = communities.spectral_subgraph_decomposition(G,Q,G.nodes(),G.degree(weight='weight'),edec='weight')
+        assert len(gList) == 2,"Graph should have been split!"
+
+
         
