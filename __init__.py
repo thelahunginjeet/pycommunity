@@ -1,1 +1,1 @@
-__all__ = ["utilities","graphs","rewiring"]
+__all__ = ["utilities","graphs","rewiring","communities"]

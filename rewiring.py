@@ -76,7 +76,8 @@ def remove_random_edge(G):
 def move_random_edge(G):
     """
     Chooses a random edge and a random additional node, not contained in that edge, and
-    moves the edge to terminate at the new node.
+    moves the edge to terminate at the new node.  This operation might disconnect the
+    graph (leave singleton nodes).
 
     INPUT:
     -------
@@ -89,7 +90,7 @@ def move_random_edge(G):
         indicates if the move was successful or not
 
     -Conservative in nodes and edges.
-    -Does not change degree distribution.
+    -Changes degree distribution.
     -Fails if the first node selected is fully connected or for a graph with no edges.
     """
     # choose a random edge
