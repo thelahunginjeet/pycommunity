@@ -35,7 +35,6 @@ class TestCommunity:
         else:
             assert G.edges() == edges, "Edges should not have changed!"
 
-
     def test_swap_edges(self):
         G = graphs.simple_graph()
         nEdges = len(G.edges())
@@ -46,7 +45,6 @@ class TestCommunity:
         else:
             assert G.edges() == edges, "Edges should not have changed!"
 
-
     def test_move_degree_dist(self):
         from numpy import sort
         accept = 0.0
@@ -56,7 +54,6 @@ class TestCommunity:
             accept += rewiring.move_random_edge(G)
         assert len(G.edges()) == len(edges), "Number of edges should not have changed!"
         
-
     def test_swap_node_degrees(self):
         accept = 0.0
         G = graphs.simple_graph()
@@ -67,12 +64,10 @@ class TestCommunity:
         for k in G.degree():
             assert G.degree()[k] == deg[k], "Node degrees should not have changed!"
 
-
     def test_unweighted_modularity_matrix(self):
         G = graphs.simple_graph()
         Q = communities.modularity_matrix(G)
         assert Q.shape == (len(G.nodes()),len(G.nodes())),"Q matrix is the wrong shape!"
-
     
     def test_weighted_modularity_matrix(self):
         G = graphs.monkey_grooming_graph()
@@ -80,19 +75,27 @@ class TestCommunity:
         Q2 = communities.modularity_matrix(G,edec='weight')
         assert (Q1 != Q2).any(),"Weighted and unweighted Q matrices should not be identical!"
 
-
     def test_unweighted_spectral_decomp_noflip(self):
         G = graphs.simple_graph()
         Q = communities.modularity_matrix(G,edec=None)
         gList = communities.spectral_subgraph_decomposition(G,Q,G.nodes(),G.degree(weight=None))
         assert len(gList) == 2,"Graph should have been split!"
 
-    
     def test_weighted_spectral_decomp_noflip(self):
         G = graphs.monkey_grooming_graph()
         Q = communities.modularity_matrix(G,edec='weight')
         gList = communities.spectral_subgraph_decomposition(G,Q,G.nodes(),G.degree(weight='weight'),edec='weight')
         assert len(gList) == 2,"Graph should have been split!"
+
+    def test_find_communities_spectral_unweighted(self):
+        G = graphs.simple_graph()
+        clist = communities.find_communities_spectral(G)
+        assert len(clist) == 3,"Three communities should have been found!"
+
+    def test_find_communities_spectral_weighted(self):
+        G = graphs.monkey_grooming_graph()
+        clist = communities.find_communities_spectral(G,edec='weight')
+        assert len(clist) == 3,"Three communities should have been found!"
 
 
         
