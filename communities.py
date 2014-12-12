@@ -103,7 +103,7 @@ def spectral_subgraph_decomposition(g,Q,nodes,ki,edec=None,flip=False,eps=1.0e-1
         nodeDict[x] = counter
         counter += 1
     # parent graph degree sum
-    kisum = sum(ki.values())
+    kisum = 1.0*sum(ki.values())
     # subgraph nodes and degrees
     sgNodes = g.nodes()
     sgki = g.degree(weight=edec)
@@ -223,7 +223,7 @@ def find_communities_spectral(G,edec=None,eps=1.0e-12,flip=False):
     # construct and return the communities list
     clist = []
     for g in newCDict:
-       clist.append(g.nodes())
+       clist.append(tuple(np.sort(g.nodes())))
     return clist
 
 
