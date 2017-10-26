@@ -14,7 +14,7 @@ class PyTest(Command):
         raise SystemExit(errno)
 
 setup(name='pycommunity',
-      version='1.0',
+      version='0.1.0',
       description='Networkx-compatible utilities, extensions, and community structure detection',
       author='Kevin Brown',
       author_email='kevin.s.brown@uconn.edu',
