@@ -11,9 +11,41 @@ Copyright (c) 2011 __MyCompanyName__. All rights reserved.
 
 import sys,os,unittest,copy
 import numpy as np
-from numpy import real_if_close
+from numpy import real_if_close,zeros,max,diag
 from numpy.linalg import eig
 import networkx as nx
+
+def modularity_weighted(G,comm_assign,edec):
+    pass
+
+
+def modularity_unweighted(G,comm_assign):
+    '''
+    Computes Newman's modularity Q for a given assignment of nodes to communities.
+    Defined for unweighted graphs.
+
+    INPUT
+    -------
+    G : networkx graph, required
+
+    comm_assign: dict, required
+        a dictionary keyed on node mapped to community assignments in the range
+        0,...,c-1
+    '''
+    # figure out the number of communities
+    c = max(comm_assign.values()) + 1
+    e_ij = zeros((c,c))
+    # compute edge fractions
+    for e in G.edges():
+        ci = comm_assign[e[0]]
+        cj = comm_assign[e[1]]
+        e_ij[ci,cj] += 1.0
+    # normalize
+    e_ij = e_ij/len(G.edges())
+    # compute a_i by summing over columns
+    a_i = e_ij.sum(axis=1)
+    # compute and return Q
+    return diag(e_ij - a_i**2).sum()
 
 
 def modularity_matrix(G,edec=None):
@@ -54,8 +86,8 @@ def modularity_matrix(G,edec=None):
 def spectral_subgraph_decomposition(g,Q,nodes,ki,edec=None,flip=False,eps=1.0e-12):
     '''
     Attempts to split a subgraph g of a larger graph G (g can also equal G) into two
-    parts that maximizes modularity.  
-    
+    parts that maximizes modularity.
+
     INPUT
     ------
     g : networkx graph, required
@@ -91,7 +123,7 @@ def spectral_subgraph_decomposition(g,Q,nodes,ki,edec=None,flip=False,eps=1.0e-1
                 single element of the list will be the input g
             -if len(gList) == 2, the list contains two graphs which are the subgraphs g1,g2
                 obtained by spectral decomposition + optional heuristic reassignment
-    
+
     '''
     # will store new subgraphs after decomposition
     gList = []
@@ -110,7 +142,7 @@ def spectral_subgraph_decomposition(g,Q,nodes,ki,edec=None,flip=False,eps=1.0e-1
     # indexing into master modularity matrix
     sgNodeIndices = [nodeDict[x] for x in sgNodes]
     BsubG = Q[np.ix_(sgNodeIndices,sgNodeIndices)]
-    # ratio of degree sums for subgraph nodes to all nodes     
+    # ratio of degree sums for subgraph nodes to all nodes
     ndr = sum([ki[x] for x in sgNodes])/kisum
     # subgraph correction to BsubG
     for i in xrange(0,len(sgNodes)):
@@ -138,7 +170,7 @@ def spectral_subgraph_decomposition(g,Q,nodes,ki,edec=None,flip=False,eps=1.0e-1
 	    	    sprime[i] = -1*sprime[i]
                     # compute modularity change
                     dQs = (1.0/(2.0*kisum))*np.dot(np.dot(sprime.T,BsubG),sprime)[0,0]
-                    # reject small modularity changes 
+                    # reject small modularity changes
                     if (dQs - dQ) < eps:
 	    		sprime[i] = -1*sprime[i]
 	    	s = sprime
@@ -162,9 +194,9 @@ def spectral_subgraph_decomposition(g,Q,nodes,ki,edec=None,flip=False,eps=1.0e-1
 def find_communities_spectral(G,edec=None,eps=1.0e-12,flip=False):
     '''
     Performs successive splits of the input graph G into community subgraphs.  Terminates
-    when further subdivision increases Newman's modularity (Q) less than eps.   
-        
-    Set flip=True to try a heuristic reassignment at each binary split (each node is swapped 
+    when further subdivision increases Newman's modularity (Q) less than eps.
+
+    Set flip=True to try a heuristic reassignment at each binary split (each node is swapped
     into the other community and any modularity increasing moves are retained).
 
 
@@ -187,7 +219,7 @@ def find_communities_spectral(G,edec=None,eps=1.0e-12,flip=False):
     -------
     clist : list of tuples of nodes; each tuple is a community
         (community numbers are aribtrary)
-    
+
     '''
     # original graph statistics - used repeatedly
     Gnodes = G.nodes()
@@ -233,7 +265,7 @@ class CommunityDetector(object):
 		# translate node names into integers (and back again)
 		self.nodeToInt = dict()
 		self.intToNode = dict()
-	
+
 	def detect_community_structure(self,G,**kwargs):
 		"""Overload this method in derived classes to implement particular methods."""
 		pass
@@ -242,8 +274,8 @@ class CommunityDetector(object):
 class DegreeBasedCommunityDetector(CommunityDetector):
 	def __init__(self):
 		super(DegreeBasedCommunityDetector,self).__init__()
-	
-	
+
+
 	def detect_community_structure(self,G):
 		"""Probably will not work well.  Procedure:
 			[1] sort the nodes by degree
@@ -252,7 +284,7 @@ class DegreeBasedCommunityDetector(CommunityDetector):
 				it shares with the existing communities (call this c_i)
 			[4] if c_i > 0 for some i, assign the node to community argmax(c_i)
 			[5] if all c_i's are zero, put the node in a new community
-			[6] repeat until there are no remaining nodes 
+			[6] repeat until there are no remaining nodes
 		"""
 		commDict = {}
 		cCounter = 0
@@ -277,5 +309,5 @@ class DegreeBasedCommunityDetector(CommunityDetector):
 				# winner take all
 				commDict[np.argmax(nConn)] += [revND[indxOrder[i]]]
 		return commDict
-		
+
 '''
